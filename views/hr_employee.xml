@@ -10,7 +10,7 @@
                 <field name="work_phone" position="after">
                     <group>
                         <field name="show_balance" invisible="1"/>
-                        <field name="hour_balance" attrs="{'invisible': [('show_balance', '=', False)]}"/>
+                        <field name="hour_balance" attrs="{'invisible': ['|', ('show_balance', '=', False), '|', ('hour_balance_start', '=', False), ('weekly_working_time', 'in', ['hour_worker', False])]}"/>
                     </group>
                 </field>
 
