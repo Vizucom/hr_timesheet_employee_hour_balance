@@ -9,7 +9,8 @@
             <field name="arch" type="xml">
                 <field name="work_phone" position="after">
                     <group>
-                        <field name="hour_balance" attrs="{'invisible': ['|', ('hour_balance_start', '=', False), ('weekly_working_time', 'in', ['hour_worker', False])]}"/>
+                        <field name="show_balance" invisible="1"/>
+                        <field name="hour_balance" attrs="{'invisible': [('show_balance', '=', False)]}"/>
                     </group>
                 </field>
 

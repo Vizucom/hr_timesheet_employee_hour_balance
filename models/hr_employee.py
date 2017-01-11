@@ -57,6 +57,10 @@ class Employee(models.Model):
         else:
             self.hour_balance = 0
 
+    @api.one
+    def _get_show_balance(self):
+        self.show_balance = self.user_id.id == self.env.uid and True or False
+
     weekly_working_time = fields.Selection([('30', '30'),
                                             ('37.5', '37,5'),
                                             ('hour_worker', 'No fixed working time')], 'Weekly working time (h)', default='hour_worker')
@@ -66,3 +70,6 @@ class Employee(models.Model):
 
     # Fill the existing m2o relation between employees and timesheets so that it can be used in api.depends
     timesheet_ids = fields.One2many('hr_timesheet_sheet.sheet', 'employee_id', 'Timesheets')
+
+    # A helper field that is used to restrict that the user can only see their own hour balance in the employee form view
+    show_balance = fields.Boolean('Show Hour Balance', compute=_get_show_balance)
