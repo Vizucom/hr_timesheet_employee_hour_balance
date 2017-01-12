@@ -7,6 +7,23 @@ class Employee(models.Model):
 
     _inherit = 'hr.employee'
 
+    def get_hours_worked(self, today):
+        ''' Fetch all timesheet lines the user has logged between calculation start date and today,
+        and get the sum of hours.
+
+        Override this function if there is need for more complex calculation
+        that takes into account e.g. public holidays. '''
+
+        today_str = datetime.datetime.strftime(today, '%Y-%m-%d')
+
+        timesheet_line_ids = self.env['hr.analytic.timesheet'].search(args=[('user_id', '=', self.user_id.id),
+                                                                            ('date', '>=', self.hour_balance_start),
+                                                                            ('date', '<=', today_str)])
+
+        hours_worked = sum(timesheet_line.unit_amount for timesheet_line in timesheet_line_ids)
+
+        return hours_worked
+
     def get_hours_needed(self, date_to_check, today, daily_hours):
         ''' Iterate through all dates from start date to today. If the date is not
         Saturday or Sunday, increase the hours_needed counter by the employee's
@@ -40,17 +57,9 @@ class Employee(models.Model):
 
             date_to_check = datetime.datetime.strptime(self.hour_balance_start, "%Y-%m-%d").date()
             today = datetime.datetime.now().date()
-            today_str = datetime.datetime.strftime(today, '%Y-%m-%d')
             daily_hours = float(self.weekly_working_time) / 5
-            hours_worked = 0
 
-            ''' Fetch all timesheet lines the user has logged between calculation start date and today,
-            and get the sum of hours '''
-            timesheet_line_ids = self.env['hr.analytic.timesheet'].search(args=[('user_id', '=', self.user_id.id),
-                                                                                ('date', '>=', self.hour_balance_start),
-                                                                                ('date', '<=', today_str)])
-
-            hours_worked = sum(timesheet_line.unit_amount for timesheet_line in timesheet_line_ids)
+            hours_worked = self.get_hours_worked(today)
             hours_needed = self.get_hours_needed(date_to_check, today, daily_hours)
 
             self.hour_balance = hours_worked - hours_needed
